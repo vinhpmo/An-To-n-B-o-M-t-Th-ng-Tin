@@ -115,10 +115,10 @@ python receive.py
 ## 💬 Ví dụ phản hồi ACK / NACK
 
 ### Phản hồi ACK (Hợp lệ)
-![ACK](a47ddeae-4698-4813-a564-e7f88e58d8e2.png)
+![ACK](ACK.png)
 
 ### Phản hồi NACK (Lỗi timestamp, sai chữ ký...)
-![NACK](ab4a2ff9-7c28-43af-9a0e-94e650abe22b.png)
+![NACK](NACK.png)
 
 ---
 
