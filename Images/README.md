@@ -1,5 +1,5 @@
 
-![Đại Nam](a0a697ea-ba38-4314-bf3e-84e2a2cd5a6c.png)
+![Đại Nam](dn.png)
 
 # Hệ thống chia sẻ file nội bộ an toàn – Đề tài nhóm 10: Truyền dữ liệu y tế có bảo mật
 
@@ -119,10 +119,10 @@ python receive.py
 ![Người nhận](images/receiver.png)
 
 ## Ví dụ phản hồi ACK
-![ACK](images/ack.png)
+![ACK](images/ACK.png)
 
 ## Ví dụ phản hồi NACK
-![NACK](images/nack.png)
+![NACK](images/NACK.png)
 
 
 ## 💡 Mục tiêu
