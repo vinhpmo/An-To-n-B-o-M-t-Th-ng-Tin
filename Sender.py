@@ -61,3 +61,4 @@ with open("packet.json", "w") as f:
     json.dump(packet, f, indent=2)
 
 print("✅ Gói tin đã được tạo và lưu vào packet.json")
+input("⏳ Chờ ACK/NACK từ Receiver... (ấn Enter sau khi nhận phản hồi)")

@@ -1,5 +1,5 @@
 # receiver.py
-import json, base64, zlib
+import json, base64, zlib, os, time
 from Crypto.Cipher import AES, PKCS1_v1_5
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
@@ -9,6 +9,7 @@ from Crypto.Random import get_random_bytes
 msg = input("✉️ Nhập tin nhắn handshake từ Sender: ")
 if msg != "Hello!":
     print("❌ Handshake sai, từ chối kết nối.")
+    print("❌ Integrity failed. Gửi NACK về cho Sender.")
     exit()
 print("📥 Ready!")
 
@@ -28,19 +29,21 @@ received_hash = packet["hash"]
 recomputed_hash = SHA512.new(nonce + ciphertext + tag).hexdigest()
 if recomputed_hash != received_hash:
     print("❌ Lỗi toàn vẹn! (hash mismatch)")
+    print("❌ Integrity failed. Gửi NACK về cho Sender.")
     exit()
 
 # ====== Bước 3: Kiểm tra chữ ký ======
 metadata_hash = SHA512.new(metadata.encode())
-sender_pubkey = RSA.import_key(open("Keys/Sender_pub.pem").read())  # Sửa đường dẫn
+sender_pubkey = RSA.import_key(open("Keys/Sender_pub.pem").read())
 try:
     pkcs1_15.new(sender_pubkey).verify(metadata_hash, signature)
 except (ValueError, TypeError):
     print("❌ Chữ ký không hợp lệ!")
+    print("❌ Integrity failed. Gửi NACK về cho Sender.")
     exit()
 
 # ====== Bước 4: Giải mã session_key bằng RSA ======
-receiver_prikey = RSA.import_key(open("Keys/Receiver_pri.pem").read())  # Sửa đường dẫn
+receiver_prikey = RSA.import_key(open("Keys/Receiver_pri.pem").read())
 rsa_cipher = PKCS1_v1_5.new(receiver_prikey)
 session_key = rsa_cipher.decrypt(enc_key, get_random_bytes(16))
 
@@ -50,25 +53,24 @@ try:
     decrypted_data = aes.decrypt_and_verify(ciphertext, tag)
 except ValueError:
     print("❌ Xác thực tag thất bại!")
+    print("❌ Integrity failed. Gửi NACK về cho Sender.")
     exit()
+
 # ====== Bước 6: Kiểm tra timestamp trong metadata ======
-import time
 filename, timestamp_str, filetype = metadata.split("|")
 timestamp = int(timestamp_str)
 current_time = int(time.time())
-
-# Cho phép chênh lệch tối đa 60 giây (có thể điều chỉnh)
 if abs(current_time - timestamp) > 60:
     print("⚠️ Cảnh báo: Gói tin có thể bị tấn công replay (timestamp không hợp lệ)")
+    print("❌ Integrity failed. Gửi NACK về cho Sender.")
     exit()
 
 # ====== Bước 7: Giải nén và lưu ======
 plain_data = zlib.decompress(decrypted_data)
-
-import os
 os.makedirs("uploads", exist_ok=True)
-
 with open("uploads/received_finance.txt", "wb") as f:
     f.write(plain_data)
 
+# ====== Bước 8: Phản hồi thành công ======
 print("✅ Đã giải mã và lưu file: uploads/received_finance.txt")
+print("✅ File hợp lệ. ACK gửi lại cho Sender.")
